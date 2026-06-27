@@ -57,7 +57,7 @@ The script supports various machine learning models and includes functionalities
 
 3. **Install the required packages**:
 
-   The script requires Python 3.10 and the following packages:
+   The script requires Python 3.14 and the following packages:
 
    - numpy
    - pandas

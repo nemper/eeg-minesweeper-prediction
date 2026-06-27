@@ -1,4 +1,4 @@
-# used Python 3.10
+# migrated to Python 3.14 (originally written for Python 3.10)
 import os, json
 from time import time
 from datetime import datetime
@@ -30,6 +30,12 @@ from matplotlib.ticker import MaxNLocator
 from seaborn import heatmap
 
 import streamlit as st
+
+DATA_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "data",
+    "eeg_data",
+)
 
 simplefilter("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
@@ -387,7 +393,7 @@ def classification_prediction_and_evaluation(feature_matrix: DataFrame):
             
             smote = SMOTE(
                 sampling_strategy="auto", random_state=random_state,
-                k_neighbors=1, n_jobs=-1)
+                k_neighbors=1)
             X_train, y_train = smote.fit_resample(X_train, y_train)
         
         classifier_random_state = random_state \
@@ -419,7 +425,7 @@ def classification_prediction_and_evaluation(feature_matrix: DataFrame):
                 "max_depth": [None, 2],
                 "min_samples_split": [2, 4],
                 "min_samples_leaf": [1, 2],
-                "max_features": ["auto", "sqrt"],
+                "max_features": ["sqrt", "log2"],
                 }
             if prediction_parameters["use DTC"]:
                 classifier = DTC(random_state=classifier_random_state)
@@ -724,7 +730,7 @@ def if_running_a_regular_script():
     
     # 5 (3) elemenata
     sys_parameters = {
-        "path" : r"C:\Users\neman\Desktop\master_python\newdata",
+        "path" : DATA_DIR,
         "number of runs" : 3,
         "window length" : 2.0,
         "fs" : 128,
@@ -1008,7 +1014,7 @@ def if_running_a_streamlit_app():
         sys_parameters = {
             "path" : st.selectbox(
                 label="path", 
-                options=["C:/Users/neman/Desktop/master_python/newdata"],
+                options=[DATA_DIR],
                 ),
             "divider 1" : st.divider(
                 ),
@@ -1174,4 +1180,4 @@ if __name__ == "__main__":
                 pass
 
             
-#                               \__(*~*)__/   ta-da        
+#                               \__(*~*)__/   ta-da
