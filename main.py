@@ -910,27 +910,6 @@ def machine_learning_system():
                         *processing(
                             *extract_data(
                             )))))))
-    _ = """
-    start lines:
-    
-    extract_data - 113
-    processing - 171
-        create_columns_names - 218
-        windowing - 234
-    eeg_feature_extraction - 273
-    creating_the_feature_matrix - 375
-    classification_prediction_and_evaluation - 428
-        calculate_the_average_classification_report - 551
-    regression_prediction_and_evaluation - 577
-        scorings_for_grid_search - 685
-    metrics_visualization - 712
-    _____________________________________________________
-    
-    if_running_a_regular_script - 771
-        check_various_conditions - 827
-    if_running_a_streamlit_app - 968
-    remember_parameters - 1125
-    """
 
 
 if __name__ == "__main__":
