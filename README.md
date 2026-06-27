@@ -1,6 +1,6 @@
 # EEG Data Analysis and Machine Learning System
 
-This repository contains a comprehensive Python script developed for the analysis of EEG data and the application of machine learning techniques to classify outcomes and predict completion times based on EEG features. The script is designed to be flexible and user-friendly, offering both a command-line interface and a graphical interface via Streamlit.
+This repository contains a comprehensive Python script developed for the analysis of EEG data and the application of machine learning techniques to classify outcomes and predict completion times based on EEG features. The script is designed to be flexible and user-friendly, offering both a command-line interface and a web interface served by FastAPI.
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ This repository contains a comprehensive Python script developed for the analysi
 - [Installation](#installation)
 - [Usage](#usage)
   - [Command-Line Interface](#command-line-interface)
-  - [Streamlit Application](#streamlit-application)
+  - [Web Application (FastAPI)](#web-application-fastapi)
 - [Data Processing Pipeline](#data-processing-pipeline)
   - [Data Extraction](#data-extraction)
   - [Preprocessing](#preprocessing)
@@ -39,7 +39,7 @@ The script supports various machine learning models and includes functionalities
 - **Machine Learning Models**: Implements classifiers (SVC, Decision Tree, Random Forest) and regressors (Theil-Sen, Neural Network, Gradient Boosting).
 - **Hyperparameter Tuning**: Utilizes GridSearchCV for optimal parameter selection.
 - **Results Visualization**: Generates plots for metrics such as accuracy, confusion matrices, and regression errors.
-- **User Interface**: Offers both command-line and Streamlit graphical interfaces for parameter selection.
+- **User Interface**: Offers both a command-line interface and a FastAPI web app (plain HTML/CSS) for parameter selection.
 
 ## Installation
 
@@ -66,7 +66,7 @@ The script supports various machine learning models and includes functionalities
    - imbalanced-learn
    - matplotlib
    - seaborn
-   - streamlit
+   - fastapi[standard] (>= 0.138)
 
    Install them using:
 
@@ -77,58 +77,49 @@ The script supports various machine learning models and includes functionalities
    Or install them individually:
 
    ```bash
-   pip install numpy pandas scipy scikit-learn imbalanced-learn matplotlib seaborn streamlit
+   pip install numpy pandas scipy scikit-learn imbalanced-learn matplotlib seaborn "fastapi[standard]"
    ```
 
 ## Usage
 
+### Web Application (FastAPI)
+
+The graphical interface is a FastAPI app (`app.py`) that serves a plain
+HTML/CSS frontend and runs the pipeline on the server. Run it with:
+
+```bash
+fastapi run app.py
+# or, equivalently:
+uvicorn app:app
+```
+
+Then open the printed URL (by default <http://127.0.0.1:8000>) and:
+
+- Adjust the parameters using the form controls.
+- Click the **"START THE SYSTEM"** button to run the analysis.
+- View the results (evaluation plots, predictions, feature matrix, and the
+  parameters used) on the results page.
+
+The frontend is served via FastAPI 0.138's `app.frontend()`; the form
+posts to the `POST /run` endpoint, which runs the pipeline and renders the
+results page server-side (no JavaScript).
+
 ### Command-Line Interface
 
-By default, the script is set up to run as a Streamlit application. To run it as a regular script from the command line:
+To run the analysis headlessly without the web app:
 
-1. **Open the script in a text editor**.
+1. **Configure parameters**: edit the dicts in the `if_running_a_regular_script()`
+   function in `main.py` to suit your dataset and preferences.
 
-2. **Set `use_streamlit` to `False`** in the `if __name__ == "__main__":` block:
-
-   ```python
-   if __name__ == "__main__":
-       use_streamlit = False
-       # Rest of the code...
-   ```
-
-3. **Configure Parameters**:
-
-   Modify the parameters in the `if_running_a_regular_script()` function to suit your dataset and preferences.
-
-4. **Run the script**:
+2. **Run the script**:
 
    ```bash
-   python your_script_name.py
+   python main.py
    ```
 
-### Streamlit Application
-
-To run the script as a Streamlit application:
-
-1. **Ensure `use_streamlit` is set to `True`** in the `if __name__ == "__main__":` block:
-
-   ```python
-   if __name__ == "__main__":
-       use_streamlit = True
-       # Rest of the code...
-   ```
-
-2. **Run the Streamlit app**:
-
-   ```bash
-   streamlit run your_script_name.py
-   ```
-
-3. **Interact with the app**:
-
-   - Adjust the parameters using the provided widgets.
-   - Click the **"START THE SYSTEM"** button to run the analysis.
-   - View the results and visualizations directly in the browser.
+   Results are written next to the script (a `*__feature_matrix.csv`,
+   `*__predictions.txt`, `*__parameters.csv`, and a `*__evaluations.png`),
+   and the evaluation plot is shown in a Matplotlib window.
 
 ## Data Processing Pipeline
 
@@ -190,7 +181,7 @@ The script processes data through several stages, encapsulated in functions for 
 
 ## Parameters Configuration
 
-Parameters can be set either via the Streamlit interface or by modifying the code when running as a script.
+Parameters can be set either via the web app's form or by modifying the code when running as a script.
 
 ### System Parameters
 
@@ -246,7 +237,7 @@ Parameters can be set either via the Streamlit interface or by modifying the cod
     - R² score over runs.
 - **Output**:
   - Saves the plots as PNG files.
-  - Displays them directly in the Streamlit app or shows them when running as a script.
+  - Displays them on the web app's results page, or shows the Matplotlib window when running as a script.
 
 ## License
 
