@@ -17,8 +17,17 @@ from fastapi.templating import Jinja2Templates
 
 
 app = FastAPI()
+_progress = {"running": False, "step": "", "index": 0, "total": 7}
+_progress_lock = threading.Lock()
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 pipeline_lock = threading.Lock()
+
+
+def _set_progress(index: int, step: str, running: bool = True):
+    with _progress_lock:
+        _progress["index"] = index
+        _progress["step"] = step
+        _progress["running"] = running
 
 
 def _read_evaluations_img(filename: str) -> str:
@@ -43,6 +52,12 @@ def _read_csv_table(filename: str) -> str:
         return pd.read_csv(filename).to_html(index=False, border=0)
     except Exception:
         return ""
+
+
+@app.get("/progress")
+def progress():
+    with _progress_lock:
+        return dict(_progress)
 
 
 @app.post("/run")
@@ -117,7 +132,23 @@ def run(
         main.system_parameters = system_parameters
         main.current_datetime = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
         main.remember_parameters()
-        main.machine_learning_system()
+        try:
+            _set_progress(1, "Extracting data…")
+            extracted = main.extract_data()
+            _set_progress(2, "Processing & windowing…")
+            processed = main.processing(*extracted)
+            _set_progress(3, "Extracting EEG features…")
+            features = main.eeg_feature_extraction(*processed)
+            _set_progress(4, "Building feature matrix…")
+            feature_matrix = main.creating_the_feature_matrix(*features)
+            _set_progress(5, "Classifying outcomes…")
+            classified = main.classification_prediction_and_evaluation(feature_matrix)
+            _set_progress(6, "Regressing completion time…")
+            regressed = main.regression_prediction_and_evaluation(*classified)
+            _set_progress(7, "Rendering results…")
+            main.metrics_visualization(*regressed)
+        finally:
+            _set_progress(_progress["index"], "", running=False)
         dt = main.current_datetime
 
         evaluations_img = _read_evaluations_img(f"{dt}__evaluations.png")

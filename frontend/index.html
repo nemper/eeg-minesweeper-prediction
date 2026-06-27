@@ -21,7 +21,7 @@
         "Time" and "Outcome" are always submitted via hidden inputs (required by the pipeline).
         The "path" control is display-only; the backend always uses its own DATA_DIR.
     -->
-    <form action="/run" method="post" class="grid">
+    <form action="/run" method="post" class="grid" id="param-form">
 
       <!-- ===================== PREDICTION ===================== -->
       <section class="card">
@@ -196,10 +196,54 @@
       </section>
 
       <div class="actions">
-        <button type="submit" class="start">START THE SYSTEM 🧠💻📊</button>
+        <div class="start-row">
+          <button type="submit" class="start" id="start-btn">START THE SYSTEM 🧠💻📊</button>
+          <div class="run-indicator" id="run-indicator" role="status" aria-live="polite" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="run-status" id="run-status">Starting…</span>
+          </div>
+        </div>
         <p class="hint">The pipeline runs on the server; results appear on the next page (it can take a little while).</p>
       </div>
     </form>
   </main>
+
+  <!--
+    Progressive enhancement: the form works without JavaScript (a normal POST that
+    returns the results page). With JS, we additionally show a spinner and the
+    current pipeline step by polling GET /progress while the POST is in flight.
+  -->
+  <script>
+    (function () {
+      var form = document.getElementById("param-form");
+      var btn = document.getElementById("start-btn");
+      var indicator = document.getElementById("run-indicator");
+      var statusEl = document.getElementById("run-status");
+      if (!form) return;
+
+      form.addEventListener("submit", function () {
+        // Do NOT preventDefault: let the normal POST proceed and navigate to results.
+        indicator.hidden = false;
+        statusEl.textContent = "Starting…";
+        btn.classList.add("is-running");
+        // disable AFTER submission is already initiated, to avoid double-clicks
+        setTimeout(function () { btn.disabled = true; }, 0);
+
+        var poll = function () {
+          fetch("/progress", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (p) {
+              if (p && p.step) {
+                statusEl.textContent = p.index + "/" + p.total + " — " + p.step;
+              }
+            })
+            .catch(function () { /* ignore transient errors during the run */ });
+        };
+        poll();
+        var timer = setInterval(poll, 400);
+        window.addEventListener("pagehide", function () { clearInterval(timer); });
+      });
+    })();
+  </script>
 </body>
 </html>
