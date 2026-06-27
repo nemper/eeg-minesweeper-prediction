@@ -29,8 +29,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from seaborn import heatmap
 
-import streamlit as st
-
 DATA_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data",
@@ -331,15 +329,13 @@ def creating_the_feature_matrix(eeg_features: np.ndarray,
     difficulty_mapping = {"Easy": 10, "Normal": 100, "Advanced": 1000}
     keys_to_process = ["Difficulty", "Fields", "Mines"]
 
-    if use_streamlit or \
-        prediction_parameters["use non essential game annotations"]:
-        for key in keys_to_process:
-            if key in game_features:
-                if key == "Difficulty":
-                    game_features[key] = [difficulty_mapping[difficulty]
-                                          for difficulty in game_features[key]]
-                else:
-                    game_features[key] = [int(value) for value in game_features[key]]
+    for key in keys_to_process:
+        if key in game_features:
+            if key == "Difficulty":
+                game_features[key] = [difficulty_mapping[difficulty]
+                                      for difficulty in game_features[key]]
+            else:
+                game_features[key] = [int(value) for value in game_features[key]]
 
     
     for key, values in game_features.items():
@@ -404,17 +400,6 @@ def classification_prediction_and_evaluation(feature_matrix: DataFrame):
             if prediction_parameters["use same random state for classifier"] \
                 else None
         
-        if use_streamlit:
-            st_classifier = prediction_parameters["pick classifier"]
-            combo_map = {
-                "use SVC": ("use SVC", False, False),
-                "use DTC": (False, "use DTC", False),
-                "use RFC": (False, False, "use RFC"),
-                }
-            prediction_parameters.update(
-                dict(zip(["use SVC", "use DTC", "use RFC"], 
-                         combo_map[st_classifier])))
-                
         if prediction_parameters["use SVC"]:
             classifier = SVC(random_state=classifier_random_state)
             param_grid = {
@@ -541,17 +526,6 @@ def regression_prediction_and_evaluation(feature_matrix: DataFrame,
             if prediction_parameters["use same random state for regressor"] \
                 else None
         
-        if use_streamlit:
-            st_regressor = prediction_parameters["pick regressor"]
-            combo_map = {
-                "use TSR": ("use TSR", False, False),
-                "use NNR": (False, "use NNR", False),
-                "use GBR": (False, False, "use GBR"),
-                }
-            prediction_parameters.update(
-                dict(zip(["use TSR", "use NNR", "use GBR"], 
-                         combo_map[st_regressor])))
-    
         if prediction_parameters["use TSR"]:
             regressor = TSR(random_state=regressor_random_state)
             
@@ -899,163 +873,6 @@ def check_various_conditions(pred_parameters: dict,
         return True, None
     
 
-def if_running_a_streamlit_app():
-    st.set_page_config(layout="wide")
-    
-    edit_streamlit_style = """
-        <style>
-            MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            #root > div:nth-child(1) > div > div > div > div > \
-            section > div {padding-top: 2rem;}
-        </style>
-        """
-    st.markdown(body=edit_streamlit_style, unsafe_allow_html=True)
-    
-    col_1, _, col_2, col_3 = st.columns(spec=[8, 1, 5, 2])
-    
-    col_1.text(body="")
-    col_1.subheader(body="Pomoćni alat za master tezu")
-    
-    col_2.text(body="")
-    col_2.info(body="Nemanja Peruničić, B1 3/22", icon="🎓")
-
-    try:
-        col_3.image(image=os.path.join("data", "ftn_logo_fun.gif"))
-    except:
-        pass
-    
-    st.divider()
-    _, col_a, _, col_b = st.columns(spec=[1, 14, 1, 12])
-    
-    with col_a:
-        scorings_for_classifier, scorings_for_regressor = scorings_for_grid_search()
-
-        pred_parameters = {
-            "use fixed random state" : st.checkbox(
-                label="use fixed random state",
-                ),
-            "divider 1" : st.divider(
-                ),
-            "use stratify" :  st.checkbox(
-                label="use stratify",
-                ),
-            "use scaling and oversampling for classification" : st.checkbox(
-                label="use scaling and oversampling for classification",
-                ),
-            "use same random state for classifier" : st.checkbox(
-                label="use same random state for classifier",
-                ),
-            "pick classifier" : st.selectbox(
-                label="pick classifier",
-                options=["use SVC", "use DTC", "use RFC"],
-                ),
-            "use grid search for classifier": st.checkbox(
-                label="use grid search for classifier",
-                ),
-            "scoring for classifier grid search" : st.selectbox(
-                label="pick classifier scoring",
-                options=scorings_for_classifier,
-                ),
-            "divider 2" : st.divider(
-                ),
-            "use same random state for regressor" : st.checkbox(
-                label="use same random state for regressor",
-                ),
-            "use augmentation for regression" : st.checkbox(
-                label="use augmentation for regression",
-                ),
-            "pick regressor" : st.selectbox(
-                label="pick regressor",
-                options=["use TSR", "use NNR", "use GBR"],
-                ),
-            "use grid search for regressor": st.checkbox(
-                label="use grid search for regressor",
-                ),
-            "scoring for regressor grid search" : st.selectbox(
-                label="pick regressor scoring",
-                options=scorings_for_regressor,
-                ),
-            "fake divider" : st.text(
-                body="",
-                ),
-            }
-        try:
-            st.image(image=os.path.join("data", "eeg_potato.jpg"))
-        except:
-            pass
-            
-    with col_b:
-        proc_parameters = {
-            "csv values: columns to drop" : st.multiselect(
-                label="csv values: columns to drop",
-                options=["OriginalTimestamp"],
-                default=["OriginalTimestamp"],
-                ),
-            "csv values: timestamps column name" : st.selectbox(
-                label="csv values: timestamps column name", 
-                options=["Timestamp"],
-                ),
-            "csv values: pow 1st column name" : st.selectbox(
-                label="csv values: pow 1st column name", 
-                options=["POW.AF3.Theta"],
-                ),
-            "csv values: amp 1st column name" : st.selectbox(
-                label="csv values: amp 1st column name", 
-                options=["EEG.AF3"],
-                ),
-            "csv intervals: timestamps column name" : st.selectbox(
-                label="csv intervals: timestamps column name",
-                options=["timestamp"],
-                ),
-            "game annotations" : st.multiselect(
-                label = "game annotations",
-                options=["Time", "Outcome", "Difficulty", "Fields", "Mines"],
-                default=["Time", "Outcome"],
-                help = "Ne izostaviti obavezne parametre!"),
-            }
-        
-        sys_parameters = {
-            "path" : st.selectbox(
-                label="path", 
-                options=[DATA_DIR],
-                ),
-            "divider 1" : st.divider(
-                ),
-            "number of runs" : st.slider(
-                label="number of runs", 
-                min_value=1, max_value=50, step=1, value=5,
-                ),
-            "window length" : st.slider(
-                label="window length", 
-                min_value=0.1, max_value=5.0, step=0.1, value=2.0,
-                ),
-            "fs" : st.select_slider(
-                label="sampling frequency", 
-                options=[2**i for i in range(7, 10 + 1)], value=2**7,
-                ),
-            "divider 2" : st.divider(
-                ),
-            "files extensions" : {
-                "csv values files" : st.selectbox(
-                    label="csv values files", 
-                    options=[".md.mc.pm.fe.bp.csv"],
-                    ),
-                "csv intervals files" : st.selectbox(
-                    label="csv intervals files", 
-                    options=["intervalMarker.csv"],
-                    ),
-                "json annotations files" : st.selectbox(
-                    label="json annotations files", 
-                    options=[".json"],
-                    ),
-                },
-            }
-    st.divider()
-    
-    return pred_parameters, proc_parameters, sys_parameters
-
-
 def remember_parameters():
     # INNER
     combined_dict = {**prediction_parameters, 
@@ -1117,71 +934,18 @@ def machine_learning_system():
 
 
 if __name__ == "__main__":
-    # !!!    
-    use_streamlit = True
-    _ = """         ^^^^^
-    if True >> u terminalu >> "streamlit run nemanja_perunicic_mas.py"
-    
-    if False >> proverite vrednosti parametara u funkciji:
-    if_running_a_regular_script() >> pa potom standardno Run dugme/komanda
-    """
- 
-    if not use_streamlit:
-        (prediction_parameters, 
-         processing_parameters, 
-         system_parameters, 
-         errors
-         ) = if_running_a_regular_script()
-        
-        current_datetime = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
-        
-        if errors:
-            print(errors)
-        else:
-            remember_parameters()
-            machine_learning_system()
-            
+    (prediction_parameters,
+     processing_parameters,
+     system_parameters,
+     errors) = if_running_a_regular_script()
+
+    current_datetime = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+
+    if errors:
+        print(errors)
     else:
-        (prediction_parameters, 
-         processing_parameters, 
-         system_parameters
-         ) = if_running_a_streamlit_app()
-        
-        status = st.empty()
-        start = st.button(
-            label="**:green[START THE SYSTEM]** 🧠💻📊", 
-            use_container_width=True,
-            )
-        
-        if start:
-            status.subheader("🏃 🏃🏽 🏃🏻 🏃🏾 🏃🏼 🏃🏿 ↗️")
-            
-            current_datetime = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
-            remember_parameters()
-            machine_learning_system()
-            
-            status.subheader("🌬️ ... gotovo! ➡️ Možete skrolovati nadole...")
-            
-            try:
-                st.image(f"{current_datetime}__evaluations.png")
-            except:
-                pass
-            try:
-                with open(f"{current_datetime}__predictions.txt", "r") as f:
-                    st.divider()
-                    st.text(body=f.read())
-            except:
-                pass
-            try:
-                st.divider()
-                st.table(data=read_csv(f"{current_datetime}__feature_matrix.csv"))
-            except:
-                pass
-            try:
-                st.divider()
-                st.table(data=read_csv(f"{current_datetime}__parameters.csv"))
-            except:
-                pass
+        remember_parameters()
+        machine_learning_system()
 
             
 #                               \__(*~*)__/   ta-da
