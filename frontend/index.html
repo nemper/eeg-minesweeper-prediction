@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomoćni alat za master tezu</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <h1>Pomoćni alat za master tezu 🧠</h1>
+      <p class="byline">Nemanja Peruničić, B1 3/22 🎓 &nbsp;·&nbsp; EEG &amp; Minesweeper — classification &amp; regression</p>
+    </header>
+
+    <!--
+      Form contract for the backend (POST /run, application/x-www-form-urlencoded):
+        Checkboxes submit value="true" only when checked (absent otherwise) -> parse as bool default False.
+        Selects submit their option value. Number inputs submit numeric strings.
+        game_annotations and columns_to_drop submit zero-or-more repeated values -> parse as list.
+        "Time" and "Outcome" are always submitted via hidden inputs (required by the pipeline).
+        The "path" control is display-only; the backend always uses its own DATA_DIR.
+    -->
+    <form action="/run" method="post" class="grid">
+
+      <!-- ===================== PREDICTION ===================== -->
+      <section class="card">
+        <h2>Prediction</h2>
+
+        <fieldset>
+          <legend>Classification</legend>
+
+          <label class="field">
+            <span>Classifier</span>
+            <select name="pick_classifier">
+              <option value="SVC" selected>SVC — Support Vector Classifier</option>
+              <option value="DTC">DTC — Decision Tree</option>
+              <option value="RFC">RFC — Random Forest</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Scoring for classifier grid search</span>
+            <select name="scoring_classifier">
+              <option value="accuracy" selected>accuracy</option>
+              <option value="balanced_accuracy">balanced_accuracy</option>
+              <option value="top_k_accuracy">top_k_accuracy</option>
+              <option value="f1">f1</option>
+              <option value="f1_macro">f1_macro</option>
+              <option value="f1_micro">f1_micro</option>
+              <option value="f1_samples">f1_samples</option>
+              <option value="f1_weighted">f1_weighted</option>
+              <option value="jaccard">jaccard</option>
+              <option value="jaccard_macro">jaccard_macro</option>
+              <option value="jaccard_micro">jaccard_micro</option>
+              <option value="jaccard_samples">jaccard_samples</option>
+              <option value="jaccard_weighted">jaccard_weighted</option>
+              <option value="neg_brier_score">neg_brier_score</option>
+              <option value="neg_log_loss">neg_log_loss</option>
+              <option value="precision">precision</option>
+              <option value="average_precision">average_precision</option>
+              <option value="precission_macro">precission_macro</option>
+              <option value="precission_micro">precission_micro</option>
+              <option value="precission_samples">precission_samples</option>
+              <option value="precission_weighted">precission_weighted</option>
+              <option value="recall">recall</option>
+              <option value="recall_macro">recall_macro</option>
+              <option value="recall_micro">recall_micro</option>
+              <option value="recall_samples">recall_samples</option>
+              <option value="recall_weighted">recall_weighted</option>
+              <option value="roc_auc">roc_auc</option>
+              <option value="roc_auc_ovo">roc_auc_ovo</option>
+              <option value="roc_auc_ovo_weighted">roc_auc_ovo_weighted</option>
+              <option value="roc_auc_ovr">roc_auc_ovr</option>
+              <option value="roc_auc_ovr_weighted">roc_auc_ovr_weighted</option>
+            </select>
+          </label>
+
+          <label class="opt"><input type="checkbox" name="use_grid_search_classifier" value="true"> use grid search for classifier</label>
+          <label class="opt"><input type="checkbox" name="use_scaling_and_oversampling" value="true"> use scaling and oversampling for classification</label>
+          <label class="opt"><input type="checkbox" name="use_same_random_state_classifier" value="true"> use same random state for classifier</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Regression</legend>
+
+          <label class="field">
+            <span>Regressor</span>
+            <select name="pick_regressor">
+              <option value="TSR" selected>TSR — Theil-Sen</option>
+              <option value="NNR">NNR — MLP Neural Net</option>
+              <option value="GBR">GBR — Gradient Boosting</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Scoring for regressor grid search</span>
+            <select name="scoring_regressor">
+              <option value="explained_variance" selected>explained_variance</option>
+              <option value="max_error">max_error</option>
+              <option value="neg_mean_absolute_error">neg_mean_absolute_error</option>
+              <option value="neg_mean_absolute_percentage_error">neg_mean_absolute_percentage_error</option>
+              <option value="neg_mean_squared_log_error">neg_mean_squared_log_error</option>
+              <option value="neg_mean_poisson_deviance">neg_mean_poisson_deviance</option>
+              <option value="neg_mean_squared_error">neg_mean_squared_error</option>
+              <option value="neg_median_absolute_error">neg_median_absolute_error</option>
+              <option value="neg_root_mean_squared_error">neg_root_mean_squared_error</option>
+              <option value="r2">r2</option>
+            </select>
+          </label>
+
+          <label class="opt"><input type="checkbox" name="use_grid_search_regressor" value="true"> use grid search for regressor</label>
+          <label class="opt"><input type="checkbox" name="use_augmentation_regression" value="true"> use augmentation for regression</label>
+          <label class="opt"><input type="checkbox" name="use_same_random_state_regressor" value="true"> use same random state for regressor</label>
+        </fieldset>
+
+        <label class="opt strong"><input type="checkbox" name="use_fixed_random_state" value="true"> use fixed random state</label>
+        <label class="opt strong"><input type="checkbox" name="use_stratify" value="true"> use stratify</label>
+      </section>
+
+      <!-- ===================== PROCESSING + SYSTEM ===================== -->
+      <section class="card">
+        <h2>Processing</h2>
+
+        <label class="opt"><input type="checkbox" name="columns_to_drop" value="OriginalTimestamp" checked> csv values: drop "OriginalTimestamp"</label>
+
+        <label class="field">
+          <span>csv values: timestamps column</span>
+          <select name="timestamps_column"><option value="Timestamp" selected>Timestamp</option></select>
+        </label>
+        <label class="field">
+          <span>csv values: amp 1st column</span>
+          <select name="amp_1st_column"><option value="EEG.AF3" selected>EEG.AF3</option></select>
+        </label>
+        <label class="field">
+          <span>csv values: pow 1st column</span>
+          <select name="pow_1st_column"><option value="POW.AF3.Theta" selected>POW.AF3.Theta</option></select>
+        </label>
+        <label class="field">
+          <span>csv intervals: timestamps column</span>
+          <select name="intervals_timestamp_column"><option value="timestamp" selected>timestamp</option></select>
+        </label>
+
+        <fieldset>
+          <legend>game annotations <small>(Time &amp; Outcome are required)</small></legend>
+          <div class="checks">
+            <label class="opt disabled"><input type="checkbox" checked disabled> Time</label>
+            <input type="hidden" name="game_annotations" value="Time">
+            <label class="opt disabled"><input type="checkbox" checked disabled> Outcome</label>
+            <input type="hidden" name="game_annotations" value="Outcome">
+            <label class="opt"><input type="checkbox" name="game_annotations" value="Difficulty"> Difficulty</label>
+            <label class="opt"><input type="checkbox" name="game_annotations" value="Fields"> Fields</label>
+            <label class="opt"><input type="checkbox" name="game_annotations" value="Mines"> Mines</label>
+          </div>
+        </fieldset>
+
+        <h2>System</h2>
+
+        <label class="field">
+          <span>data path</span>
+          <select disabled><option selected>data/eeg_data</option></select>
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span>number of runs</span>
+            <input type="number" name="number_of_runs" min="1" max="50" step="1" value="5" required>
+          </label>
+          <label class="field">
+            <span>window length (s)</span>
+            <input type="number" name="window_length" min="0.1" max="5" step="0.1" value="2.0" required>
+          </label>
+          <label class="field">
+            <span>sampling frequency</span>
+            <select name="fs">
+              <option value="128" selected>128</option>
+              <option value="256">256</option>
+              <option value="512">512</option>
+              <option value="1024">1024</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>csv values files</span>
+          <select name="csv_values_ext"><option value=".md.mc.pm.fe.bp.csv" selected>.md.mc.pm.fe.bp.csv</option></select>
+        </label>
+        <label class="field">
+          <span>csv intervals files</span>
+          <select name="csv_intervals_ext"><option value="intervalMarker.csv" selected>intervalMarker.csv</option></select>
+        </label>
+        <label class="field">
+          <span>json annotations files</span>
+          <select name="json_ext"><option value=".json" selected>.json</option></select>
+        </label>
+      </section>
+
+      <div class="actions">
+        <button type="submit" class="start">START THE SYSTEM 🧠💻📊</button>
+        <p class="hint">The pipeline runs on the server; results appear on the next page (it can take a little while).</p>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

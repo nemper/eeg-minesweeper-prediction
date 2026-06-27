@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rezultati — Pomoćni alat za master tezu</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <div class="results-header">
+      <h1>🌬️ Gotovo! — Results</h1>
+      <a class="back-link" href="/">← Run again</a>
+    </div>
+
+    {#
+      Backend (POST /run) renders this template with:
+        evaluations_img       -> a "data:image/png;base64,..." URI (or empty if missing)
+        predictions_text      -> plain text of the predictions file
+        feature_matrix_table  -> HTML <table> from DataFrame.to_html(index=False, border=0)
+        parameters_table      -> HTML <table> from DataFrame.to_html(index=False, border=0)
+    #}
+
+    {% if evaluations_img %}
+    <section class="result-section">
+      <h2>Evaluation metrics</h2>
+      <img src="{{ evaluations_img }}" alt="Evaluation plots (accuracy, confusion matrix, classification report, MSE, MAE, R²)">
+    </section>
+    {% endif %}
+
+    {% if predictions_text %}
+    <section class="result-section">
+      <h2>Predictions</h2>
+      <pre class="predictions">{{ predictions_text }}</pre>
+    </section>
+    {% endif %}
+
+    {% if feature_matrix_table %}
+    <section class="result-section">
+      <h2>Feature matrix</h2>
+      <div class="table-scroll">{{ feature_matrix_table | safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if parameters_table %}
+    <section class="result-section">
+      <h2>Parameters used</h2>
+      <div class="table-scroll">{{ parameters_table | safe }}</div>
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>
