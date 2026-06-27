@@ -911,7 +911,7 @@ def if_running_a_streamlit_app():
     col_2.info(body="Nemanja Peruničić, B1 3/22", icon="🎓")
 
     try:
-        col_3.image(image="ftn_logo_fun.gif")
+        col_3.image(image=os.path.join("data", "ftn_logo_fun.gif"))
     except:
         pass
     
@@ -971,7 +971,7 @@ def if_running_a_streamlit_app():
                 ),
             }
         try:
-            st.image(image="eeg_potato.jpg")
+            st.image(image=os.path.join("data", "eeg_potato.jpg"))
         except:
             pass
             
