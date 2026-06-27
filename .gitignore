@@ -1,0 +1,13 @@
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Extracted EEG data (the zip in data/ is the source of truth; do not push the unzipped folder)
+data/eeg_data/
+
+# Generated run artifacts
+*__feature_matrix.csv
+*__predictions.txt
+*__evaluations.png
+*__parameters.csv
