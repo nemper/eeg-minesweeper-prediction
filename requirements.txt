@@ -6,4 +6,4 @@ scikit-learn
 imbalanced-learn
 matplotlib
 seaborn
-streamlit
+fastapi[standard]>=0.138.0
