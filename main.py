@@ -154,10 +154,14 @@ def create_columns_names(current_df: DataFrame,
 
     amp_names = columns_names[amp_1st_column_index : amp_1st_column_index + 5]
     
-    columns_names = [f"{j}.{stat}" for stat in ['mean', 'var'] 
-                     for j in amp_names + ["Corr", "Xcov"]] \
-                        + columns_names[pow_1st_column_index : ] \
-                            + processing_parameters["game annotations"]
+    amp_stat_names = [f"{name}.{stat}" for stat in ["mean", "var"] for name in amp_names]
+    extra_stat_names = ["Corr.mean", "Corr.var", "Xcov.mean", "Xcov.var"]
+    columns_names = (
+        amp_stat_names
+        + extra_stat_names
+        + columns_names[pow_1st_column_index : ]
+        + processing_parameters["game annotations"]
+    )
 
     return columns_names
             
@@ -836,7 +840,7 @@ def check_various_conditions(pred_parameters: dict,
             vcondition_10 = False
             break
         
-    vcondition_11 = (len(pred_parameters) == 16 and 
+    vcondition_11 = (len(pred_parameters) == 15 and 
                      len(proc_parameters) == 6 and 
                      len(sys_parameters) == 5 and 
                      len(sys_parameters["files extensions"]) == 3)
